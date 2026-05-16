@@ -47,8 +47,8 @@ To run this project locally, follow these steps:
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/iafaaqanwar/ai-maze-solver.git
-    cd ai-maze-solver
+    git clone https://github.com/iafaaqanwar/AI-MAZE-SOLVER-SEARCH-ALGORITHM-VISUALIZER.git
+    cd AI-MAZE-SOLVER-SEARCH-ALGORITHM-VISUALIZER
     ```
 
 2.  **Create a virtual environment (recommended):**
