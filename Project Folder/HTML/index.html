@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Maze Solver — Search Algorithm Visualizer</title>
+    <meta
+      name="description"
+      content="Interactive AI-powered maze solver visualizing BFS, DFS, IDS, and A* search algorithms with real-time animation."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <!-- Animated Background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+    <!-- Header -->
+    <header id="app-header">
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect
+                x="2"
+                y="2"
+                width="28"
+                height="28"
+                rx="6"
+                stroke="url(#logoGrad)"
+                stroke-width="2.5"
+              />
+              <path
+                d="M8 8h4v4H8zM14 8h4v4h-4zM20 8h4v4h-4zM8 14h4v4H8zM20 14h4v4h-4zM8 20h4v4H8zM14 20h4v4h-4zM20 20h4v4h-4z"
+                fill="url(#logoGrad)"
+                opacity="0.7"
+              />
+              <path
+                d="M10 10L22 22"
+                stroke="url(#logoGrad)"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <defs>
+                <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                  <stop stop-color="#00d4ff" />
+                  <stop offset="1" stop-color="#8b5cf6" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div>
+            <h1>AI Maze Solver</h1>
+            <p class="subtitle">Search Algorithm Visualizer</p>
+          </div>
+        </div>
+        <div class="header-badge">
+          <span class="badge">CSC-202L — Artificial Intelligence Lab</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="app-main">
+      <!-- Left Panel: Controls -->
+      <aside id="controls-panel" class="glass-panel">
+        <div class="panel-section">
+          <h2 class="section-title">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            Maze Settings
+          </h2>
+          <div class="control-group">
+            <label for="maze-size">Grid Size</label>
+            <div class="size-control">
+              <input
+                type="range"
+                id="maze-size"
+                min="11"
+                max="51"
+                step="2"
+                value="21"
+              />
+              <span id="size-label" class="range-value">21×21</span>
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="btn-generate" class="btn btn-primary">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"
+                />
+              </svg>
+              Generate Maze
+            </button>
+            <button id="btn-clear" class="btn btn-ghost">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                />
+              </svg>
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h2 class="section-title">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M4 7h16" />
+              <path d="M4 12h16" />
+              <path d="M4 17h16" />
+            </svg>
+            Presets & Tools
+          </h2>
+          <div class="control-group">
+            <label for="preset-select">Maze Preset</label>
+            <div class="select-row">
+              <select id="preset-select" class="select-input">
+                <option value="random">Random Maze</option>
+                <option value="labyrinth">Labyrinth</option>
+                <option value="spiral">Spiral</option>
+                <option value="open">Open Field</option>
+                <option value="no-solution">No-Solution</option>
+              </select>
+              <button id="btn-apply-preset" class="btn btn-ghost btn-sm">
+                Apply
+              </button>
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="btn-export" class="btn btn-ghost">Export PNG</button>
+            <button id="btn-share" class="btn btn-ghost">Share Link</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h2 class="section-title">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
+            </svg>
+            Draw Mode
+          </h2>
+          <div class="draw-modes">
+            <button id="mode-wall" class="mode-btn active" data-mode="wall">
+              <span class="mode-color wall-color"></span>Wall
+            </button>
+            <button id="mode-start" class="mode-btn" data-mode="start">
+              <span class="mode-color start-color"></span>Start
+            </button>
+            <button id="mode-goal" class="mode-btn" data-mode="goal">
+              <span class="mode-color goal-color"></span>Goal
+            </button>
+            <button id="mode-erase" class="mode-btn" data-mode="erase">
+              <span class="mode-color erase-color"></span>Erase
+            </button>
+            <button id="mode-weight" class="mode-btn" data-mode="weight">
+              <span class="mode-color weight-color"></span>Weight
+            </button>
+          </div>
+          <div class="control-group compact">
+            <label for="weight-level">Weight Level</label>
+            <div class="size-control">
+              <input type="range" id="weight-level" min="2" max="9" value="3" />
+              <span id="weight-label" class="range-value">3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h2 class="section-title">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+              />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+            Experience
+          </h2>
+          <div class="toggle-grid">
+            <label class="toggle">
+              <input type="checkbox" id="sound-toggle" checked />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">Sound</span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="theme-toggle" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">Light Mode</span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="heatmap-toggle" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">Heatmap</span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="game-toggle" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">Game Mode</span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="race-toggle" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">Race Mode</span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="debug-toggle" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">Debugger</span>
+            </label>
+          </div>
+          <div class="shortcut-hint">Shortcuts: G / S / C / R, 1-4</div>
+        </div>
+
+        <div class="panel-section">
+          <h2 class="section-title">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Algorithm
+          </h2>
+          <div class="algorithm-select">
+            <button class="algo-btn active" data-algo="bfs" id="algo-bfs">
+              <span class="algo-tag">Queue</span>
+              <span class="algo-name">BFS</span>
+              <span class="algo-desc">Breadth-First Search</span>
+            </button>
+            <button class="algo-btn" data-algo="dfs" id="algo-dfs">
+              <span class="algo-tag">Stack</span>
+              <span class="algo-name">DFS</span>
+              <span class="algo-desc">Depth-First Search</span>
+            </button>
+            <button class="algo-btn" data-algo="ids" id="algo-ids">
+              <span class="algo-tag">Stack</span>
+              <span class="algo-name">IDS</span>
+              <span class="algo-desc">Iterative Deepening</span>
+            </button>
+            <button class="algo-btn" data-algo="astar" id="algo-astar">
+              <span class="algo-tag">PriorityQ</span>
+              <span class="algo-name">A*</span>
+              <span class="algo-desc">A-Star Search</span>
+            </button>
+          </div>
+          <div class="control-group">
+            <label for="speed-slider">Animation Speed</label>
+            <div class="size-control">
+              <input
+                type="range"
+                id="speed-slider"
+                min="1"
+                max="100"
+                value="50"
+              />
+              <span id="speed-label" class="range-value">50%</span>
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="btn-solve" class="btn btn-accent btn-lg">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              Solve
+            </button>
+            <button id="btn-compare" class="btn btn-secondary">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              Compare All
+            </button>
+          </div>
+          <div class="button-row">
+            <button id="btn-race" class="btn btn-ghost">Run Race</button>
+            <button id="btn-debugger" class="btn btn-ghost">
+              Start Debugger
+            </button>
+          </div>
+          <button id="btn-reset-viz" class="btn btn-ghost btn-sm btn-full">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            Reset Visualization
+          </button>
+        </div>
+
+        <!-- Legend -->
+        <div class="panel-section legend">
+          <h2 class="section-title">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            Legend
+          </h2>
+          <div class="legend-items">
+            <div class="legend-item">
+              <span class="legend-swatch legend-open"></span>Open Cell
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch legend-wall"></span>Wall
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch legend-start"></span>Start
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch legend-goal"></span>Goal
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch legend-explored"></span>Explored
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch legend-path"></span>Path
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center: Maze Grid -->
+      <section id="maze-section">
+        <div id="maze-container">
+          <div id="maze-grid"></div>
+        </div>
+        <div id="race-container" class="race-container" aria-hidden="true">
+          <div class="race-grid" data-algo="bfs">
+            <div class="race-label">BFS</div>
+            <div class="race-board"></div>
+          </div>
+          <div class="race-grid" data-algo="dfs">
+            <div class="race-label">DFS</div>
+            <div class="race-board"></div>
+          </div>
+          <div class="race-grid" data-algo="ids">
+            <div class="race-label">IDS</div>
+            <div class="race-board"></div>
+          </div>
+          <div class="race-grid" data-algo="astar">
+            <div class="race-label">A*</div>
+            <div class="race-board"></div>
+          </div>
+        </div>
+        <div id="debug-bar" class="glass-panel debug-bar" aria-hidden="true">
+          <button id="btn-debug-play" class="btn btn-ghost btn-sm">Play</button>
+          <button id="btn-debug-pause" class="btn btn-ghost btn-sm">
+            Pause
+          </button>
+          <button id="btn-debug-back" class="btn btn-ghost btn-sm">
+            Step Back
+          </button>
+          <button id="btn-debug-forward" class="btn btn-ghost btn-sm">
+            Step Forward
+          </button>
+          <button id="btn-debug-end" class="btn btn-ghost btn-sm">End</button>
+        </div>
+        <div id="status-bar" class="glass-panel">
+          <span id="status-text"
+            >Click "Generate Maze" or draw your own maze to get started.</span
+          >
+        </div>
+      </section>
+
+      <!-- Right Panel: Stats -->
+      <aside id="stats-panel" class="glass-panel">
+        <div class="panel-section">
+          <h2 class="section-title">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+            Results
+          </h2>
+          <div id="stats-cards">
+            <div class="stat-card" id="stat-algorithm">
+              <span class="stat-label">Algorithm</span>
+              <span class="stat-value" id="stat-algo-value">—</span>
+            </div>
+            <div class="stat-card" id="stat-found">
+              <span class="stat-label">Path Found</span>
+              <span class="stat-value" id="stat-found-value">—</span>
+            </div>
+            <div class="stat-card" id="stat-nodes">
+              <span class="stat-label">Nodes Explored</span>
+              <span class="stat-value" id="stat-nodes-value">—</span>
+            </div>
+            <div class="stat-card" id="stat-cost">
+              <span class="stat-label">Path Cost</span>
+              <span class="stat-value" id="stat-cost-value">—</span>
+            </div>
+            <div class="stat-card" id="stat-time">
+              <span class="stat-label">Time (ms)</span>
+              <span class="stat-value" id="stat-time-value">—</span>
+            </div>
+            <div class="stat-card" id="stat-player">
+              <span class="stat-label">Player Steps</span>
+              <span class="stat-value" id="stat-player-value">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h2 class="section-title">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            Algorithm Comparison
+          </h2>
+          <div id="comparison-table-container">
+            <table id="comparison-table">
+              <thead>
+                <tr>
+                  <th>Algorithm</th>
+                  <th>Nodes</th>
+                  <th>Cost</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="comparison-body">
+                <tr>
+                  <td colspan="4" class="empty-msg">
+                    Run "Compare All" to see results
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Bar Chart -->
+          <div id="chart-container">
+            <h3 class="chart-title">Nodes Explored</h3>
+            <div id="bar-chart"></div>
+          </div>
+          <div id="radar-container">
+            <h3 class="chart-title">Algorithm Radar</h3>
+            <canvas id="radar-chart" width="260" height="220"></canvas>
+            <div id="radar-legend" class="radar-legend"></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Made with Love Footer -->
+    <footer id="love-footer">
+      <div class="love-footer-inner">
+        <span class="love-text">Made with</span>
+        <span class="love-heart" aria-label="love">&#10084;&#65039;</span>
+        <span class="love-text">by</span>
+        <span class="love-author">Afaaq Anwar</span>
+      </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+  </body>
+</html>
